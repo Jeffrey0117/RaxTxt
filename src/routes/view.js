@@ -13,6 +13,7 @@ function escapeHtml(text) {
 function buildViewPage(paste) {
   const langMap = { json: 'json', markdown: 'markdown', text: 'plaintext' }
   const lang = langMap[paste.content_type] || 'plaintext'
+  const isMarkdown = paste.content_type === 'markdown'
   const escaped = escapeHtml(paste.content)
   const viewUrl = `${config.baseUrl}/${paste.id}`
 
@@ -24,6 +25,7 @@ function buildViewPage(paste) {
   <title>rawtxt / ${paste.id}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  ${isMarkdown ? '<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>' : ''}
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #f5f5f0; color: #222; font-family: 'JetBrains Mono', monospace; }
@@ -80,6 +82,29 @@ function buildViewPage(paste) {
     .qr-popup p { font-size: 11px; color: #999; margin-top: 8px; }
     pre { padding: 24px; overflow-x: auto; background: #fff; }
     code { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+    .markdown-body {
+      padding: 24px 40px;
+      background: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #222;
+    }
+    .markdown-body h1 { font-size: 28px; margin: 20px 0 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+    .markdown-body h2 { font-size: 22px; margin: 18px 0 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+    .markdown-body h3 { font-size: 18px; margin: 16px 0 8px; }
+    .markdown-body p { margin: 0 0 12px; }
+    .markdown-body ul, .markdown-body ol { margin: 0 0 12px; padding-left: 24px; }
+    .markdown-body li { margin: 4px 0; }
+    .markdown-body code { background: #f0f0ec; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+    .markdown-body pre { background: #f8f8f5; border: 1px solid #eee; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 0 0 12px; }
+    .markdown-body pre code { background: none; padding: 0; }
+    .markdown-body blockquote { border-left: 4px solid #ddd; padding: 4px 16px; margin: 0 0 12px; color: #666; }
+    .markdown-body table { border-collapse: collapse; margin: 0 0 12px; width: 100%; }
+    .markdown-body th, .markdown-body td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+    .markdown-body th { background: #f5f5f0; font-weight: 700; }
+    .markdown-body a { color: #0066cc; }
+    .markdown-body img { max-width: 100%; border-radius: 8px; }
     @media (max-width: 600px) {
       .header { padding: 12px 14px; }
       .header-top { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -88,6 +113,7 @@ function buildViewPage(paste) {
       .copy-all { flex: 1; text-align: center; padding: 10px 14px; font-size: 15px; }
       pre { padding: 14px; }
       code { font-size: 12px; word-break: break-all; }
+      .markdown-body { padding: 16px; font-size: 14px; }
       .qr-popup { right: auto; left: 0; }
     }
   </style>
@@ -116,10 +142,14 @@ function buildViewPage(paste) {
       <span>${paste.expires_at ? 'expires ' + paste.expires_at : 'forever'}</span>
     </div>
   </div>
-  <pre><code class="language-${lang}" id="content">${escaped}</code></pre>
+  ${isMarkdown
+    ? `<div class="markdown-body" id="content"></div>`
+    : `<pre><code class="language-${lang}" id="content">${escaped}</code></pre>`}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script>
-    hljs.highlightAll();
+    ${isMarkdown
+      ? `marked.setOptions({ highlight: (code, lang) => { try { return hljs.highlight(code, {language: lang}).value } catch(e) { return code } } }); document.getElementById('content').innerHTML = marked.parse(${JSON.stringify(paste.content)});`
+      : 'hljs.highlightAll();'}
     new QRCode(document.getElementById('qrCanvas'), { text: ${JSON.stringify(viewUrl)}, width: 160, height: 160 });
     const rawContent = ${JSON.stringify(paste.content)};
     function flash(btn, msg) {

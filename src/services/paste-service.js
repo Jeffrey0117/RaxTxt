@@ -75,6 +75,18 @@ export function getStats() {
   }
 }
 
+export function listRecent(limit = 20) {
+  const db = getDb()
+  const now = new Date().toISOString().replace('T', ' ').slice(0, 19)
+  return db.prepare(`
+    SELECT id, content_type, size_bytes, token_count, created_at, expires_at
+    FROM pastes
+    WHERE expires_at IS NULL OR expires_at > ?
+    ORDER BY created_at DESC
+    LIMIT ?
+  `).all(now, limit)
+}
+
 export function cleanupExpired() {
   const db = getDb()
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19)
