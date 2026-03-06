@@ -12,18 +12,20 @@ body {
   display: flex;
   justify-content: center;
   padding: 60px 20px;
+  overflow-x: hidden;
 }
 
 main {
   width: 100%;
   max-width: 760px;
+  min-width: 0;
 }
 
 h1 {
   color: #000;
-  font-size: 96px;
+  font-size: clamp(48px, 12vw, 96px);
   font-weight: 900;
-  letter-spacing: -5px;
+  letter-spacing: -4px;
   line-height: 0.9;
 }
 
@@ -65,12 +67,14 @@ textarea::placeholder {
   align-items: center;
   padding: 12px 20px;
   border-top: 2px solid #eee;
+  gap: 12px;
 }
 
 .toolbar .left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  min-width: 0;
 }
 
 select {
@@ -92,20 +96,23 @@ select:hover {
 .token-count {
   color: #bbb;
   font-size: 14px;
+  white-space: nowrap;
 }
 
 #submit {
   background: #000;
   color: #fff;
   border: none;
-  padding: 18px 48px;
+  padding: 14px 36px;
   font-family: inherit;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   cursor: pointer;
   border-radius: 10px;
   letter-spacing: 1px;
   text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 #submit:hover {
@@ -132,6 +139,7 @@ kbd {
   border-radius: 12px;
   padding: 20px;
   background: #fff;
+  overflow: hidden;
 }
 
 .result.hidden {
@@ -159,6 +167,7 @@ kbd {
 
 .url-box input {
   flex: 1;
+  min-width: 0;
   background: #f5f5f0;
   color: #000;
   border: 2px solid #ddd;
@@ -168,6 +177,8 @@ kbd {
   font-size: 14px;
   font-weight: 600;
   outline: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .copy-btn {
@@ -178,6 +189,8 @@ kbd {
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .copy-btn:hover {
@@ -190,6 +203,7 @@ kbd {
   color: #bbb;
   font-size: 12px;
   margin-top: 6px;
+  word-break: break-all;
 }
 
 .qr-row {
@@ -199,9 +213,8 @@ kbd {
   text-align: center;
 }
 
-.qr-row img {
+.qr-row canvas {
   border-radius: 8px;
-  border: 2px solid #eee;
 }
 
 .qr-hint {
@@ -212,12 +225,7 @@ kbd {
 
 @media (max-width: 600px) {
   body {
-    padding: 32px 12px;
-  }
-
-  h1 {
-    font-size: 52px;
-    letter-spacing: -3px;
+    padding: 28px 12px;
   }
 
   .subtitle {
@@ -226,14 +234,14 @@ kbd {
   }
 
   textarea {
-    min-height: 200px;
+    min-height: 180px;
     padding: 14px;
     font-size: 14px;
   }
 
   .toolbar {
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     padding: 12px 14px;
   }
 
@@ -244,24 +252,25 @@ kbd {
 
   #submit {
     width: 100%;
-    padding: 16px;
-    font-size: 18px;
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  kbd {
+    display: none;
   }
 
   .result {
     padding: 14px;
   }
 
-  .url-box {
-    flex-direction: column;
-  }
-
   .url-box input {
     font-size: 12px;
+    padding: 8px 10px;
   }
 
   .copy-btn {
-    width: 100%;
-    text-align: center;
+    padding: 8px 14px;
+    font-size: 12px;
   }
 }

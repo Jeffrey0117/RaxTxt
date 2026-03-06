@@ -15,7 +15,6 @@ function buildViewPage(paste) {
   const lang = langMap[paste.content_type] || 'plaintext'
   const escaped = escapeHtml(paste.content)
   const viewUrl = `${config.baseUrl}/${paste.id}`
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(viewUrl)}&size=200x200&margin=8`
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -24,21 +23,23 @@ function buildViewPage(paste) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>rawtxt / ${paste.id}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #f5f5f0; color: #222; font-family: 'JetBrains Mono', monospace; }
     .header {
       padding: 16px 24px;
       border-bottom: 2px solid #eee;
+      background: #fff;
+    }
+    .header-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #fff;
     }
     .header a { color: #000; text-decoration: none; font-weight: 900; font-size: 18px; }
-    .meta { color: #999; font-size: 13px; }
-    .meta span { margin-left: 16px; }
-    .actions { display: flex; gap: 8px; align-items: center; }
+    .meta { color: #999; font-size: 12px; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+    .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .actions a, .actions button {
       background: #f5f5f0;
       color: #222;
@@ -50,6 +51,7 @@ function buildViewPage(paste) {
       font-weight: 600;
       cursor: pointer;
       text-decoration: none;
+      white-space: nowrap;
     }
     .actions a:hover, .actions button:hover { border-color: #000; color: #000; }
     .copy-all {
@@ -74,50 +76,51 @@ function buildViewPage(paste) {
       box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     }
     .qr-popup.show { display: block; }
-    .qr-popup img { display: block; border-radius: 4px; }
+    .qr-popup canvas { display: block; border-radius: 4px; }
     .qr-popup p { font-size: 11px; color: #999; margin-top: 8px; }
     pre { padding: 24px; overflow-x: auto; background: #fff; }
     code { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
     @media (max-width: 600px) {
-      .header { flex-direction: column; gap: 10px; padding: 12px 14px; align-items: flex-start; }
+      .header { padding: 12px 14px; }
+      .header-top { flex-direction: column; align-items: flex-start; gap: 10px; }
       .meta { font-size: 11px; }
-      .meta span { margin-left: 0; margin-right: 10px; }
-      .actions { flex-wrap: wrap; }
+      .actions { width: 100%; }
       .copy-all { flex: 1; text-align: center; padding: 10px 14px; font-size: 15px; }
       pre { padding: 14px; }
-      code { font-size: 12px; }
+      code { font-size: 12px; word-break: break-all; }
       .qr-popup { right: auto; left: 0; }
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <div>
+    <div class="header-top">
       <a href="/">rawtxt</a>
-      <span class="meta">
-        <span>${paste.content_type}</span>
-        <span>${paste.size_bytes} bytes</span>
-        <span>~${paste.token_count} tokens</span>
-        <span>${paste.expires_at ? 'expires ' + paste.expires_at : 'forever'}</span>
-      </span>
-    </div>
-    <div class="actions">
-      <a href="/${paste.id}/raw">raw</a>
-      <button onclick="copyRawUrl()">copy raw url</button>
-      <div class="qr-btn">
-        <button onclick="toggleQr()">qr</button>
-        <div class="qr-popup" id="qrPopup">
-          <img src="${qrUrl}" alt="QR Code" width="200" height="200">
-          <p>scan to open on mobile</p>
+      <div class="actions">
+        <a href="/${paste.id}/raw">raw</a>
+        <button onclick="copyRawUrl()">copy url</button>
+        <div class="qr-btn">
+          <button onclick="toggleQr()">qr</button>
+          <div class="qr-popup" id="qrPopup">
+            <canvas id="qrCanvas"></canvas>
+            <p>scan to open on mobile</p>
+          </div>
         </div>
+        <button class="copy-all" onclick="copyAll()">copy all</button>
       </div>
-      <button class="copy-all" onclick="copyAll()">copy all</button>
+    </div>
+    <div class="meta">
+      <span>${paste.content_type}</span>
+      <span>${paste.size_bytes} bytes</span>
+      <span>~${paste.token_count} tokens</span>
+      <span>${paste.expires_at ? 'expires ' + paste.expires_at : 'forever'}</span>
     </div>
   </div>
   <pre><code class="language-${lang}" id="content">${escaped}</code></pre>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script>
     hljs.highlightAll();
+    QRCode.toCanvas(document.getElementById('qrCanvas'), ${JSON.stringify(viewUrl)}, { width: 180, margin: 2 });
     const rawContent = ${JSON.stringify(paste.content)};
     function flash(btn, msg) {
       const orig = btn.textContent;

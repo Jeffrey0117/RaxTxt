@@ -46,8 +46,7 @@ async function submitPaste() {
     viewUrlEl.value = json.data.url
     resultMetaEl.textContent =
       `${json.data.contentType} | ${json.data.sizeBytes} bytes | ~${json.data.tokenCount} tokens | expires ${json.data.expiresAt}`
-    const qrImg = $('#qrImg')
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(json.data.url)}&size=200x200&margin=8`
+    QRCode.toCanvas($('#qrCanvas'), json.data.url, { width: 160, margin: 2 })
     resultEl.classList.remove('hidden')
 
     await navigator.clipboard.writeText(json.data.rawUrl)
