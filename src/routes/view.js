@@ -61,7 +61,7 @@ function buildViewPage(paste) {
         <span>${paste.content_type}</span>
         <span>${paste.size_bytes} bytes</span>
         <span>~${paste.token_count} tokens</span>
-        <span>expires ${paste.expires_at}</span>
+        <span>${paste.expires_at ? 'expires ' + paste.expires_at : 'forever'}</span>
       </span>
     </div>
     <div class="actions">
@@ -88,7 +88,7 @@ export default async function viewRoutes(fastify) {
       .header('Content-Type', 'text/plain; charset=utf-8')
       .header('X-Content-Type', paste.content_type)
       .header('X-Token-Count', String(paste.token_count))
-      .header('X-Expires-At', paste.expires_at)
+      .header('X-Expires-At', paste.expires_at || 'forever')
       .header('Cache-Control', 'no-cache')
       .send(paste.content)
   })

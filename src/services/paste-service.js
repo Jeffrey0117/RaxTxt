@@ -13,6 +13,7 @@ const EXPIRES_MAP = {
 }
 
 function computeExpiresAt(expiresIn) {
+  if (expiresIn === 'forever') return null
   const hours = EXPIRES_MAP[expiresIn] || EXPIRES_MAP[config.defaultExpiresIn]
   const date = new Date(Date.now() + hours * 3600_000)
   return date.toISOString().replace('T', ' ').slice(0, 19)
@@ -39,7 +40,7 @@ export function createPaste(content, expiresIn = config.defaultExpiresIn) {
     contentType,
     sizeBytes,
     tokenCount,
-    expiresAt
+    expiresAt: expiresAt || 'forever'
   }
 }
 
@@ -49,7 +50,7 @@ export function getPaste(id) {
 
   if (!paste) return null
 
-  if (new Date(paste.expires_at + 'Z') < new Date()) {
+  if (paste.expires_at && new Date(paste.expires_at + 'Z') < new Date()) {
     db.prepare('DELETE FROM pastes WHERE id = ?').run(id)
     return null
   }
@@ -65,7 +66,7 @@ export function getStats() {
       COUNT(*) as total,
       COALESCE(SUM(size_bytes), 0) as totalBytes
     FROM pastes
-    WHERE expires_at > ?
+    WHERE expires_at IS NULL OR expires_at > ?
   `).get(now)
 
   return {

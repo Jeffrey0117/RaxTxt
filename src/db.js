@@ -24,10 +24,31 @@ export function getDb() {
       size_bytes   INTEGER NOT NULL,
       token_count  INTEGER NOT NULL,
       created_at   TEXT NOT NULL DEFAULT (datetime('now')),
-      expires_at   TEXT NOT NULL
+      expires_at   TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_pastes_expires_at ON pastes(expires_at);
   `)
+
+  // migrate: drop NOT NULL on expires_at for forever support
+  const colInfo = db.prepare("PRAGMA table_info(pastes)").all()
+  const expiresCol = colInfo.find(c => c.name === 'expires_at')
+  if (expiresCol && expiresCol.notnull === 1) {
+    db.exec(`
+      ALTER TABLE pastes RENAME TO pastes_old;
+      CREATE TABLE pastes (
+        id           TEXT PRIMARY KEY,
+        content      TEXT NOT NULL,
+        content_type TEXT NOT NULL DEFAULT 'text',
+        size_bytes   INTEGER NOT NULL,
+        token_count  INTEGER NOT NULL,
+        created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+        expires_at   TEXT
+      );
+      INSERT INTO pastes SELECT * FROM pastes_old;
+      DROP TABLE pastes_old;
+      CREATE INDEX IF NOT EXISTS idx_pastes_expires_at ON pastes(expires_at);
+    `)
+  }
 
   return db
 }

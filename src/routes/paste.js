@@ -1,7 +1,7 @@
 import { createPaste } from '../services/paste-service.js'
 import config from '../config.js'
 
-const VALID_EXPIRES = ['1h', '6h', '24h', '7d', '30d']
+const VALID_EXPIRES = ['1h', '6h', '24h', '7d', '30d', 'forever']
 
 export default async function pasteRoutes(fastify) {
   fastify.post('/api/paste', {
