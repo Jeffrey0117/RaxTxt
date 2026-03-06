@@ -20,33 +20,36 @@ function buildViewPage(paste) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>rawtxt / ${paste.id}</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0a; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; }
+    body { background: #f5f5f0; color: #222; font-family: 'JetBrains Mono', monospace; }
     .header {
       padding: 16px 24px;
-      border-bottom: 1px solid #222;
+      border-bottom: 2px solid #eee;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: #fff;
     }
-    .header a { color: #00ff88; text-decoration: none; font-weight: bold; }
-    .meta { color: #666; font-size: 13px; }
+    .header a { color: #000; text-decoration: none; font-weight: 900; font-size: 18px; }
+    .meta { color: #999; font-size: 13px; }
     .meta span { margin-left: 16px; }
     .actions { display: flex; gap: 8px; }
     .actions a, .actions button {
-      background: #1a1a1a;
-      color: #e0e0e0;
-      border: 1px solid #333;
-      padding: 6px 12px;
+      background: #f5f5f0;
+      color: #222;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      padding: 6px 14px;
       font-size: 13px;
       font-family: inherit;
+      font-weight: 600;
       cursor: pointer;
       text-decoration: none;
     }
-    .actions a:hover, .actions button:hover { border-color: #00ff88; color: #00ff88; }
-    pre { padding: 24px; overflow-x: auto; }
+    .actions a:hover, .actions button:hover { border-color: #000; color: #000; }
+    pre { padding: 24px; overflow-x: auto; background: #fff; }
     code { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
   </style>
 </head>
