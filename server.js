@@ -30,7 +30,11 @@ app.addContentTypeParser('text/plain', { parseAs: 'string' }, (req, body, done) 
 
 await app.register(fastifyStatic, {
   root: resolve(__dirname, 'public'),
-  prefix: '/'
+  prefix: '/static/'
+})
+
+app.get('/', async (request, reply) => {
+  return reply.sendFile('index.html')
 })
 
 await app.register(healthRoutes)
