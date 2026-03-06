@@ -192,6 +192,24 @@ kbd {
   margin-top: 6px;
 }
 
+.qr-row {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px solid #eee;
+  text-align: center;
+}
+
+.qr-row img {
+  border-radius: 8px;
+  border: 2px solid #eee;
+}
+
+.qr-hint {
+  color: #bbb;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
 @media (max-width: 600px) {
   body {
     padding: 32px 12px;

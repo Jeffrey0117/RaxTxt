@@ -1,4 +1,5 @@
 import { getPaste } from '../services/paste-service.js'
+import config from '../config.js'
 
 function escapeHtml(text) {
   return text
@@ -13,6 +14,8 @@ function buildViewPage(paste) {
   const langMap = { json: 'json', markdown: 'markdown', text: 'plaintext' }
   const lang = langMap[paste.content_type] || 'plaintext'
   const escaped = escapeHtml(paste.content)
+  const viewUrl = `${config.baseUrl}/${paste.id}`
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(viewUrl)}&size=200x200&margin=8`
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -35,7 +38,7 @@ function buildViewPage(paste) {
     .header a { color: #000; text-decoration: none; font-weight: 900; font-size: 18px; }
     .meta { color: #999; font-size: 13px; }
     .meta span { margin-left: 16px; }
-    .actions { display: flex; gap: 8px; }
+    .actions { display: flex; gap: 8px; align-items: center; }
     .actions a, .actions button {
       background: #f5f5f0;
       color: #222;
@@ -49,14 +52,41 @@ function buildViewPage(paste) {
       text-decoration: none;
     }
     .actions a:hover, .actions button:hover { border-color: #000; color: #000; }
+    .copy-all {
+      background: #000 !important;
+      color: #fff !important;
+      border: 2px solid #000 !important;
+    }
+    .copy-all:hover { background: #333 !important; }
+    .qr-btn { position: relative; }
+    .qr-popup {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 8px;
+      background: #fff;
+      border: 2px solid #000;
+      border-radius: 10px;
+      padding: 16px;
+      z-index: 10;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .qr-popup.show { display: block; }
+    .qr-popup img { display: block; border-radius: 4px; }
+    .qr-popup p { font-size: 11px; color: #999; margin-top: 8px; }
     pre { padding: 24px; overflow-x: auto; background: #fff; }
     code { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
     @media (max-width: 600px) {
       .header { flex-direction: column; gap: 10px; padding: 12px 14px; align-items: flex-start; }
       .meta { font-size: 11px; }
       .meta span { margin-left: 0; margin-right: 10px; }
+      .actions { flex-wrap: wrap; }
+      .copy-all { flex: 1; text-align: center; padding: 10px 14px; font-size: 15px; }
       pre { padding: 14px; }
       code { font-size: 12px; }
+      .qr-popup { right: auto; left: 0; }
     }
   </style>
 </head>
@@ -73,12 +103,44 @@ function buildViewPage(paste) {
     </div>
     <div class="actions">
       <a href="/${paste.id}/raw">raw</a>
-      <button onclick="navigator.clipboard.writeText(location.origin+'/${paste.id}/raw')">copy raw url</button>
+      <button onclick="copyRawUrl()">copy raw url</button>
+      <div class="qr-btn">
+        <button onclick="toggleQr()">qr</button>
+        <div class="qr-popup" id="qrPopup">
+          <img src="${qrUrl}" alt="QR Code" width="200" height="200">
+          <p>scan to open on mobile</p>
+        </div>
+      </div>
+      <button class="copy-all" onclick="copyAll()">copy all</button>
     </div>
   </div>
-  <pre><code class="language-${lang}">${escaped}</code></pre>
+  <pre><code class="language-${lang}" id="content">${escaped}</code></pre>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script>hljs.highlightAll();</script>
+  <script>
+    hljs.highlightAll();
+    const rawContent = ${JSON.stringify(paste.content)};
+    function flash(btn, msg) {
+      const orig = btn.textContent;
+      btn.textContent = msg;
+      setTimeout(() => btn.textContent = orig, 1500);
+    }
+    function copyAll() {
+      navigator.clipboard.writeText(rawContent);
+      flash(document.querySelector('.copy-all'), 'copied!');
+    }
+    function copyRawUrl() {
+      navigator.clipboard.writeText(location.origin + '/${paste.id}/raw');
+      flash(event.target, 'copied!');
+    }
+    function toggleQr() {
+      document.getElementById('qrPopup').classList.toggle('show');
+    }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.qr-btn')) {
+        document.getElementById('qrPopup').classList.remove('show');
+      }
+    });
+  </script>
 </body>
 </html>`
 }
