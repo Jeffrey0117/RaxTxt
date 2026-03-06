@@ -1,90 +1,196 @@
 # RaxTxt
 
-極簡文字投放服務。貼文字、拿 URL、餵 AI。
+Minimal text paste service built for AI workflows. Paste text, get a URL, feed it to any LLM.
 
-省掉存檔、給路徑、開 repo 的麻煩 — 一個 AI workflow 的中繼站。
+No accounts. No files. No repos. Just text in, URL out.
 
-## 用法
+## Quick Start
 
-### Web UI
+**Web UI** — visit [rawtxt.isnowfriend.com](https://rawtxt.isnowfriend.com), paste text, hit submit. The raw URL is copied to your clipboard automatically.
 
-開 `https://rawtxt.dev`，貼文字，按 submit，拿到 raw URL。
-
-### API
+**CLI** — pipe anything and get a raw URL back:
 
 ```bash
-# JSON body
-curl -X POST https://rawtxt.dev/api/paste \
-  -H "Content-Type: application/json" \
-  -d '{"content": "你的文字", "expiresIn": "24h"}'
-
-# 純文字
-curl -X POST https://rawtxt.dev/api/paste \
-  -H "Content-Type: text/plain" \
-  -d "你的文字"
+echo "hello world" | rawtxt
+cat spec.md | rawtxt -e forever
+git diff | rawtxt -e 1h
 ```
 
-回傳：
+**API** — one POST, one response:
+
+```bash
+curl -X POST https://rawtxt.isnowfriend.com/api/paste \
+  -H "Content-Type: application/json" \
+  -d '{"content": "your text here", "expiresIn": "24h"}'
+```
+
+## API Reference
+
+### POST /api/paste
+
+Create a new paste.
+
+**Request** — accepts `application/json` or `text/plain`:
+
+```json
+{
+  "content": "your text here",
+  "expiresIn": "24h"
+}
+```
+
+**Response:**
 
 ```json
 {
   "success": true,
   "data": {
     "id": "T5Qtz3DV",
-    "url": "https://rawtxt.dev/T5Qtz3DV",
-    "rawUrl": "https://rawtxt.dev/T5Qtz3DV/raw",
-    "contentType": "text",
-    "sizeBytes": 123,
-    "tokenCount": 31,
+    "url": "https://rawtxt.isnowfriend.com/T5Qtz3DV",
+    "rawUrl": "https://rawtxt.isnowfriend.com/T5Qtz3DV/raw",
+    "contentType": "markdown",
+    "sizeBytes": 1234,
+    "tokenCount": 308,
     "expiresAt": "2026-03-07 01:30:00"
   }
 }
 ```
 
-### CLI
+### GET /:id/raw
+
+Returns raw text content with `text/plain` content type. Designed for LLM consumption.
+
+Custom response headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-Content-Type` | Detected type: `text`, `json`, or `markdown` |
+| `X-Token-Count` | Approximate token count |
+| `X-Expires-At` | Expiration timestamp or `forever` |
+
+### GET /:id
+
+HTML preview page with syntax highlighting (highlight.js).
+
+### GET /api/health
+
+Server status and paste statistics.
+
+```json
+{
+  "status": "ok",
+  "uptime": 3600,
+  "activePastes": 42,
+  "totalBytes": 128000
+}
+```
+
+## Expiration Options
+
+| Value | Duration |
+|-------|----------|
+| `1h` | 1 hour |
+| `6h` | 6 hours |
+| `24h` | 24 hours (default) |
+| `7d` | 7 days |
+| `30d` | 30 days |
+| `forever` | Never expires |
+
+## CLI
+
+### Install
 
 ```bash
-echo "hello" | rawtxt
-cat spec.md | rawtxt
-rawtxt "inline text"
+# Download and make executable
+curl -o /usr/local/bin/rawtxt https://raw.githubusercontent.com/Jeffrey0117/RaxTxt/master/cli/rawtxt.sh
+chmod +x /usr/local/bin/rawtxt
 ```
 
-### Raw 端點
+### Usage
 
-`GET /:id/raw` 回傳純文字，直接丟給 AI 讀：
-
-```
-X-Content-Type: markdown
-X-Token-Count: 256
-X-Expires-At: 2026-03-07 01:30:00
+```bash
+rawtxt [OPTIONS] [TEXT]
 ```
 
-## 過期選項
+**Options:**
 
-| 選項 | 說明 |
-|------|------|
-| `1h` | 1 小時 |
-| `6h` | 6 小時 |
-| `24h` | 24 小時（預設）|
-| `7d` | 7 天 |
-| `30d` | 30 天 |
+| Flag | Description |
+|------|-------------|
+| `-e, --expires <TIME>` | Set expiration: `1h`, `6h`, `24h`, `7d`, `30d`, `forever` |
+| `-v, --view` | Output view URL instead of raw URL |
+| `-j, --json` | Output full JSON response |
+| `-h, --help` | Show help |
+
+**Examples:**
+
+```bash
+# Pipe mode
+echo "hello world" | rawtxt
+cat spec.md | rawtxt -e forever
+git diff | rawtxt -e 1h
+docker logs app | rawtxt -e 6h
+
+# Argument mode
+rawtxt "quick note"
+rawtxt "debug data" -e 7d
+
+# Output formats
+cat data.json | rawtxt -v         # view URL
+cat data.json | rawtxt -j         # full JSON
+```
+
+**Environment variables:**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RAWTXT_URL` | `https://rawtxt.isnowfriend.com` | Server URL |
+
+## Content Detection
+
+Content type is detected automatically:
+
+- **json** — valid JSON objects or arrays
+- **markdown** — headings, lists, code blocks, links, bold text
+- **text** — everything else
+
+## Token Counting
+
+Approximate token count is calculated for each paste:
+
+- CJK characters: 1 token each
+- Other text: ~4 characters per token
+
+Useful for estimating LLM context usage before feeding content.
 
 ## Tech Stack
 
-- **Fastify 5** — 後端框架
-- **SQLite** (better-sqlite3, WAL mode) — 資料庫
-- **nanoid** — 8 字元短 ID
-- **純 HTML/CSS/JS** — 零框架前端
+- **Fastify 5** — HTTP framework
+- **SQLite** via better-sqlite3 (WAL mode) — storage
+- **nanoid** — 8-character short IDs
+- **Vanilla HTML/CSS/JS** — zero-framework frontend
 
-## 開發
+## Self-Hosting
 
 ```bash
+git clone https://github.com/Jeffrey0117/RaxTxt.git
+cd RaxTxt
 npm install
 npm run dev
 # http://localhost:4015
 ```
 
-## 部署
+Environment variables (see `.env.example`):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `4015` | Server port |
+| `HOST` | `0.0.0.0` | Bind address |
+| `BASE_URL` | `https://rawtxt.isnowfriend.com` | Public URL for generated links |
+| `DB_PATH` | `./data/rawtxt.db` | SQLite database path |
+| `MAX_CONTENT_SIZE` | `1048576` | Max paste size in bytes (1MB) |
+| `RATE_LIMIT_MAX` | `30` | Requests per minute |
+
+**Production (PM2):**
 
 ```bash
 pm2 start ecosystem.config.cjs
