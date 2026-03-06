@@ -23,7 +23,7 @@ function buildViewPage(paste) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>rawtxt / ${paste.id}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #f5f5f0; color: #222; font-family: 'JetBrains Mono', monospace; }
@@ -76,7 +76,7 @@ function buildViewPage(paste) {
       box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     }
     .qr-popup.show { display: block; }
-    .qr-popup canvas { display: block; border-radius: 4px; }
+    .qr-popup canvas, .qr-popup img { display: block; border-radius: 4px; }
     .qr-popup p { font-size: 11px; color: #999; margin-top: 8px; }
     pre { padding: 24px; overflow-x: auto; background: #fff; }
     code { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
@@ -102,7 +102,7 @@ function buildViewPage(paste) {
         <div class="qr-btn">
           <button onclick="toggleQr()">qr</button>
           <div class="qr-popup" id="qrPopup">
-            <canvas id="qrCanvas"></canvas>
+            <div id="qrCanvas"></div>
             <p>scan to open on mobile</p>
           </div>
         </div>
@@ -120,7 +120,7 @@ function buildViewPage(paste) {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script>
     hljs.highlightAll();
-    QRCode.toCanvas(document.getElementById('qrCanvas'), ${JSON.stringify(viewUrl)}, { width: 180, margin: 2 });
+    new QRCode(document.getElementById('qrCanvas'), { text: ${JSON.stringify(viewUrl)}, width: 160, height: 160 });
     const rawContent = ${JSON.stringify(paste.content)};
     function flash(btn, msg) {
       const orig = btn.textContent;
