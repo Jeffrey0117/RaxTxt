@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rawtxt</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <h1>rawtxt</h1>
+    <p class="subtitle">paste text, get url, feed ai</p>
+
+    <div class="editor">
+      <textarea id="content" placeholder="paste your text here..." spellcheck="false"></textarea>
+      <div class="toolbar">
+        <div class="left">
+          <select id="expiresIn">
+            <option value="1h">1 hour</option>
+            <option value="6h">6 hours</option>
+            <option value="24h" selected>24 hours</option>
+            <option value="7d">7 days</option>
+            <option value="30d">30 days</option>
+          </select>
+          <span id="tokenCount" class="token-count">0 tokens</span>
+        </div>
+        <button id="submit">submit <kbd>ctrl+enter</kbd></button>
+      </div>
+    </div>
+
+    <div id="result" class="result hidden">
+      <div class="url-row">
+        <label>raw url</label>
+        <div class="url-box">
+          <input id="rawUrl" type="text" readonly>
+          <button id="copyRaw" class="copy-btn">copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <label>view url</label>
+        <div class="url-box">
+          <input id="viewUrl" type="text" readonly>
+          <button id="copyView" class="copy-btn">copy</button>
+        </div>
+      </div>
+      <div class="meta-row">
+        <span id="resultMeta"></span>
+      </div>
+    </div>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
