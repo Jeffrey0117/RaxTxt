@@ -5,62 +5,66 @@
 }
 
 body {
-  background: #0a0a0a;
-  color: #e0e0e0;
+  background: #f5f5f0;
+  color: #222;
   font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 48px 16px;
+  padding: 60px 20px;
 }
 
 main {
   width: 100%;
-  max-width: 720px;
+  max-width: 760px;
 }
 
 h1 {
-  color: #00ff88;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -1px;
+  color: #000;
+  font-size: 96px;
+  font-weight: 900;
+  letter-spacing: -5px;
+  line-height: 0.9;
 }
 
 .subtitle {
-  color: #555;
-  font-size: 14px;
-  margin-top: 4px;
-  margin-bottom: 32px;
+  color: #999;
+  font-size: 16px;
+  margin-top: 8px;
+  margin-bottom: 40px;
+  letter-spacing: 2px;
 }
 
 .editor {
-  border: 1px solid #222;
-  background: #111;
+  border: 3px solid #000;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
 }
 
 textarea {
   width: 100%;
-  min-height: 280px;
+  min-height: 260px;
   background: transparent;
-  color: #e0e0e0;
+  color: #222;
   border: none;
-  padding: 16px;
+  padding: 20px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   resize: vertical;
   outline: none;
 }
 
 textarea::placeholder {
-  color: #444;
+  color: #ccc;
 }
 
 .toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
-  border-top: 1px solid #222;
+  padding: 12px 20px;
+  border-top: 2px solid #eee;
 }
 
 .toolbar .left {
@@ -70,59 +74,64 @@ textarea::placeholder {
 }
 
 select {
-  background: #1a1a1a;
-  color: #e0e0e0;
-  border: 1px solid #333;
-  padding: 4px 8px;
+  background: #fff;
+  color: #222;
+  border: 2px solid #ddd;
+  padding: 6px 10px;
+  border-radius: 6px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   outline: none;
 }
 
 select:hover {
-  border-color: #00ff88;
+  border-color: #000;
 }
 
 .token-count {
-  color: #555;
-  font-size: 13px;
-}
-
-button {
-  background: #00ff88;
-  color: #0a0a0a;
-  border: none;
-  padding: 8px 20px;
-  font-family: inherit;
+  color: #bbb;
   font-size: 14px;
-  font-weight: 600;
+}
+
+#submit {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 18px 48px;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 800;
   cursor: pointer;
+  border-radius: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-button:hover {
-  background: #00cc6e;
-}
-
-button:disabled {
+#submit:hover {
   background: #333;
-  color: #666;
+}
+
+#submit:disabled {
+  background: #ccc;
+  color: #888;
   cursor: not-allowed;
 }
 
 kbd {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 11px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
   font-family: inherit;
 }
 
 .result {
-  margin-top: 24px;
-  border: 1px solid #222;
-  padding: 16px;
-  background: #111;
+  margin-top: 28px;
+  border: 3px solid #000;
+  border-radius: 12px;
+  padding: 20px;
+  background: #fff;
 }
 
 .result.hidden {
@@ -130,16 +139,17 @@ kbd {
 }
 
 .url-row {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .url-row label {
   display: block;
-  color: #555;
+  color: #999;
   font-size: 12px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  font-weight: 700;
 }
 
 .url-box {
@@ -149,31 +159,35 @@ kbd {
 
 .url-box input {
   flex: 1;
-  background: #1a1a1a;
-  color: #00ff88;
-  border: 1px solid #333;
-  padding: 8px 12px;
+  background: #f5f5f0;
+  color: #000;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 14px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
   outline: none;
 }
 
 .copy-btn {
-  background: #1a1a1a;
-  color: #e0e0e0;
-  border: 1px solid #333;
-  padding: 8px 16px;
-  font-size: 13px;
+  background: #f5f5f0;
+  color: #222;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .copy-btn:hover {
-  border-color: #00ff88;
-  color: #00ff88;
-  background: #1a1a1a;
+  border-color: #000;
+  color: #000;
+  background: #f5f5f0;
 }
 
 .meta-row {
-  color: #555;
+  color: #bbb;
   font-size: 12px;
-  margin-top: 4px;
+  margin-top: 6px;
 }
