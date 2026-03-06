@@ -191,3 +191,59 @@ kbd {
   font-size: 12px;
   margin-top: 6px;
 }
+
+@media (max-width: 600px) {
+  body {
+    padding: 32px 12px;
+  }
+
+  h1 {
+    font-size: 52px;
+    letter-spacing: -3px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  textarea {
+    min-height: 200px;
+    padding: 14px;
+    font-size: 14px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .toolbar .left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  #submit {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+  }
+
+  .result {
+    padding: 14px;
+  }
+
+  .url-box {
+    flex-direction: column;
+  }
+
+  .url-box input {
+    font-size: 12px;
+  }
+
+  .copy-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

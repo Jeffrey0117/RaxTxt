@@ -51,6 +51,13 @@ function buildViewPage(paste) {
     .actions a:hover, .actions button:hover { border-color: #000; color: #000; }
     pre { padding: 24px; overflow-x: auto; background: #fff; }
     code { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+    @media (max-width: 600px) {
+      .header { flex-direction: column; gap: 10px; padding: 12px 14px; align-items: flex-start; }
+      .meta { font-size: 11px; }
+      .meta span { margin-left: 0; margin-right: 10px; }
+      pre { padding: 14px; }
+      code { font-size: 12px; }
+    }
   </style>
 </head>
 <body>
