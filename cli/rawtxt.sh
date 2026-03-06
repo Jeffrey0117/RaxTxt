@@ -4,7 +4,7 @@ set -euo pipefail
 # rawtxt CLI — paste text, get a raw URL
 # https://github.com/Jeffrey0117/RaxTxt
 
-RAWTXT_URL="${RAWTXT_URL:-https://rawtxt.isnowfriend.com}"
+RAWTXT_URL="${RAWTXT_URL:-https://your-domain.com}"
 EXPIRES="24h"
 
 usage() {
@@ -27,7 +27,7 @@ Examples:
   git diff | rawtxt -e 1h
 
 Environment:
-  RAWTXT_URL  Server URL (default: https://rawtxt.isnowfriend.com)
+  RAWTXT_URL  Server URL (default: https://your-domain.com)
 EOF
   exit 0
 }

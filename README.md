@@ -6,7 +6,7 @@ No accounts. No files. No repos. Just text in, URL out.
 
 ## Quick Start
 
-**Web UI** — visit [rawtxt.isnowfriend.com](https://rawtxt.isnowfriend.com), paste text, hit submit. The raw URL is copied to your clipboard automatically.
+**Web UI** — paste text, hit submit. The raw URL is copied to your clipboard automatically.
 
 **CLI** — pipe anything and get a raw URL back:
 
@@ -19,7 +19,7 @@ git diff | rawtxt -e 1h
 **API** — one POST, one response:
 
 ```bash
-curl -X POST https://rawtxt.isnowfriend.com/api/paste \
+curl -X POST https://your-domain.com/api/paste \
   -H "Content-Type: application/json" \
   -d '{"content": "your text here", "expiresIn": "24h"}'
 ```
@@ -46,8 +46,8 @@ Create a new paste.
   "success": true,
   "data": {
     "id": "T5Qtz3DV",
-    "url": "https://rawtxt.isnowfriend.com/T5Qtz3DV",
-    "rawUrl": "https://rawtxt.isnowfriend.com/T5Qtz3DV/raw",
+    "url": "https://your-domain.com/T5Qtz3DV",
+    "rawUrl": "https://your-domain.com/T5Qtz3DV/raw",
     "contentType": "markdown",
     "sizeBytes": 1234,
     "tokenCount": 308,
@@ -143,7 +143,7 @@ cat data.json | rawtxt -j         # full JSON
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `RAWTXT_URL` | `https://rawtxt.isnowfriend.com` | Server URL |
+| `RAWTXT_URL` | `https://your-domain.com` | Server URL |
 
 ## Content Detection
 
@@ -185,7 +185,7 @@ Environment variables (see `.env.example`):
 |----------|---------|-------------|
 | `PORT` | `4015` | Server port |
 | `HOST` | `0.0.0.0` | Bind address |
-| `BASE_URL` | `https://rawtxt.isnowfriend.com` | Public URL for generated links |
+| `BASE_URL` | `https://your-domain.com` | Public URL for generated links |
 | `DB_PATH` | `./data/rawtxt.db` | SQLite database path |
 | `MAX_CONTENT_SIZE` | `1048576` | Max paste size in bytes (1MB) |
 | `RATE_LIMIT_MAX` | `30` | Requests per minute |
