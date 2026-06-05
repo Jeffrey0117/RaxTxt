@@ -38,7 +38,11 @@ export function makeSelfize(opts = {}) {
       const body = { name, schema }
       if (rules) body.rules = rules
       const created = await call('POST', '/api/collections', body)
-      if (!created.ok) throw new Error(`selfize: create collection ${name} failed (${created.status}): ${JSON.stringify(created.data)}`)
+      if (!created.ok) {
+        // NON-FATAL: Selfize collection-mgmt can 401 even for admin; /records auto-create.
+        console.warn(`selfize: ensureCollection ${name} skipped (${created.status})`)
+        return null
+      }
       return created.data
     },
 
