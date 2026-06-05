@@ -15,11 +15,20 @@ import healthRoutes from './src/routes/health.js'
 
 const app = Fastify({
   logger: true,
-  bodyLimit: config.maxContentSize + 1024
+  bodyLimit: config.maxContentSize + 1024,
+  // Behind the cloudpipe proxy / Cloudflare, so read request.ip from the
+  // forwarded client IP — otherwise EVERY visitor looks like the proxy's single
+  // IP and they all share one rate-limit bucket (which throttled page assets to
+  // 429 → unstyled pages).
+  trustProxy: true
 })
 
 await app.register(fastifyCors)
+// global:false → the limiter only applies to routes that opt in (the write
+// endpoint POST /api/paste sets its own config.rateLimit). Page loads + static
+// assets (CSS/JS) are never throttled, so the site can't render unstyled.
 await app.register(fastifyRateLimit, {
+  global: false,
   max: config.rateLimit.max,
   timeWindow: config.rateLimit.timeWindow
 })
