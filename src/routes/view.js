@@ -10,6 +10,17 @@ function escapeHtml(text) {
     .replace(/'/g, '&#039;')
 }
 
+// Safe to embed inside a <script> block: JSON.stringify does NOT escape
+// `</script>`, so a paste containing `</script><img onerror=...>` could break
+// out of the script tag (XSS). Escaping `<`/`>`/`&` to unicode keeps the JS
+// string value identical while making tag-breakout impossible.
+function safeJson(value) {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+}
+
 function buildViewPage(paste) {
   const langMap = { json: 'json', markdown: 'markdown', text: 'plaintext' }
   const lang = langMap[paste.content_type] || 'plaintext'
@@ -148,10 +159,10 @@ function buildViewPage(paste) {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script>
     ${isMarkdown
-      ? `marked.setOptions({ highlight: (code, lang) => { try { return hljs.highlight(code, {language: lang}).value } catch(e) { return code } } }); document.getElementById('content').innerHTML = marked.parse(${JSON.stringify(paste.content)});`
+      ? `marked.setOptions({ highlight: (code, lang) => { try { return hljs.highlight(code, {language: lang}).value } catch(e) { return code } } }); document.getElementById('content').innerHTML = marked.parse(${safeJson(paste.content)});`
       : 'hljs.highlightAll();'}
-    new QRCode(document.getElementById('qrCanvas'), { text: ${JSON.stringify(viewUrl)}, width: 160, height: 160 });
-    const rawContent = ${JSON.stringify(paste.content)};
+    new QRCode(document.getElementById('qrCanvas'), { text: ${safeJson(viewUrl)}, width: 160, height: 160 });
+    const rawContent = ${safeJson(paste.content)};
     function flash(btn, msg) {
       const orig = btn.textContent;
       btn.textContent = msg;
