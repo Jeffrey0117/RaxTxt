@@ -6,7 +6,7 @@ const VALID_EXPIRES = ['1h', '6h', '24h', '7d', '30d', 'forever']
 export default async function pasteRoutes(fastify) {
   fastify.get('/api/pastes', async (request) => {
     const limit = Math.min(parseInt(request.query.limit || '20', 10), 100)
-    const pastes = listRecent(limit)
+    const pastes = await listRecent(limit)
     return {
       success: true,
       data: pastes.map(p => ({
@@ -65,7 +65,7 @@ export default async function pasteRoutes(fastify) {
       })
     }
 
-    const paste = createPaste(content, expiresIn)
+    const paste = await createPaste(content, expiresIn)
     return reply.status(201).send({
       success: true,
       data: paste

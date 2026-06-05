@@ -4,9 +4,9 @@ import config from './config.js'
 let intervalId
 
 export function startCleanup() {
-  intervalId = setInterval(() => {
+  intervalId = setInterval(async () => {
     try {
-      const removed = cleanupExpired()
+      const removed = await cleanupExpired()
       if (removed > 0) {
         console.log(`[cleanup] Removed ${removed} expired paste(s)`)
       }

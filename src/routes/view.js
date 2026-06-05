@@ -180,7 +180,7 @@ function buildViewPage(paste) {
 
 export default async function viewRoutes(fastify) {
   fastify.get('/:id/raw', async (request, reply) => {
-    const paste = getPaste(request.params.id)
+    const paste = await getPaste(request.params.id)
 
     if (!paste) {
       return reply.status(404).send('Not found or expired')
@@ -196,7 +196,7 @@ export default async function viewRoutes(fastify) {
   })
 
   fastify.get('/:id', async (request, reply) => {
-    const paste = getPaste(request.params.id)
+    const paste = await getPaste(request.params.id)
 
     if (!paste) {
       return reply.status(404).header('Content-Type', 'text/plain').send('Not found or expired')

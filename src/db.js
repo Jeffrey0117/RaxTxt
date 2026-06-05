@@ -1,61 +1,38 @@
-import Database from 'better-sqlite3'
-import { mkdirSync } from 'node:fs'
-import { dirname } from 'node:path'
-import config from './config.js'
+/**
+ * Data layer — Selfize-backed (寄生獸線路).
+ *
+ * Was local better-sqlite3; now stores pastes in the user's own Selfize REST DB
+ * so rawtxt runs stateless on a free host (Render) with no native module.
+ *
+ * The short paste id (nanoid) is stored as the `pid` field — Selfize assigns its
+ * own UUID `id` + `created_at`/`updated_at` to every record.
+ */
 
-let db
+import { makeSelfize } from './selfize-client.js'
 
-export function getDb() {
-  if (db) return db
+export const COLLECTION = 'rawtxt_pastes'
 
-  mkdirSync(dirname(config.dbPath), { recursive: true })
+const PASTE_SCHEMA = [
+  { name: 'pid', type: 'text' },
+  { name: 'content', type: 'text' },
+  { name: 'content_type', type: 'text' },
+  { name: 'size_bytes', type: 'number' },
+  { name: 'token_count', type: 'number' },
+  { name: 'expires_at', type: 'text' },
+]
 
-  db = new Database(config.dbPath)
-  db.pragma('journal_mode = WAL')
-  db.pragma('busy_timeout = 5000')
-  db.pragma('synchronous = NORMAL')
-  db.pragma('foreign_keys = ON')
+let sf
 
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS pastes (
-      id           TEXT PRIMARY KEY,
-      content      TEXT NOT NULL,
-      content_type TEXT NOT NULL DEFAULT 'text',
-      size_bytes   INTEGER NOT NULL,
-      token_count  INTEGER NOT NULL,
-      created_at   TEXT NOT NULL DEFAULT (datetime('now')),
-      expires_at   TEXT
-    );
-    CREATE INDEX IF NOT EXISTS idx_pastes_expires_at ON pastes(expires_at);
-  `)
-
-  // migrate: drop NOT NULL on expires_at for forever support
-  const colInfo = db.prepare("PRAGMA table_info(pastes)").all()
-  const expiresCol = colInfo.find(c => c.name === 'expires_at')
-  if (expiresCol && expiresCol.notnull === 1) {
-    db.exec(`
-      ALTER TABLE pastes RENAME TO pastes_old;
-      CREATE TABLE pastes (
-        id           TEXT PRIMARY KEY,
-        content      TEXT NOT NULL,
-        content_type TEXT NOT NULL DEFAULT 'text',
-        size_bytes   INTEGER NOT NULL,
-        token_count  INTEGER NOT NULL,
-        created_at   TEXT NOT NULL DEFAULT (datetime('now')),
-        expires_at   TEXT
-      );
-      INSERT INTO pastes SELECT * FROM pastes_old;
-      DROP TABLE pastes_old;
-      CREATE INDEX IF NOT EXISTS idx_pastes_expires_at ON pastes(expires_at);
-    `)
-  }
-
-  return db
+/** Lazy singleton: build the Selfize client + ensure the collection exists. */
+export async function getDb() {
+  if (sf) return sf
+  const client = makeSelfize()
+  await client.ensureCollection(COLLECTION, PASTE_SCHEMA)
+  sf = client
+  return sf
 }
 
+/** No-op (Selfize is stateless HTTP) — kept so callers don't change. */
 export function closeDb() {
-  if (db) {
-    db.close()
-    db = undefined
-  }
+  sf = undefined
 }

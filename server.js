@@ -41,7 +41,7 @@ await app.register(healthRoutes)
 await app.register(pasteRoutes)
 await app.register(viewRoutes)
 
-getDb()
+await getDb()
 startCleanup()
 
 const shutdown = async () => {

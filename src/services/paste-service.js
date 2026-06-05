@@ -1,4 +1,4 @@
-import { getDb } from '../db.js'
+import { getDb, COLLECTION } from '../db.js'
 import { generateId } from './id-generator.js'
 import { detectContentType } from './content-detector.js'
 import { estimateTokens } from './token-counter.js'
@@ -19,19 +19,26 @@ function computeExpiresAt(expiresIn) {
   return date.toISOString().replace('T', ' ').slice(0, 19)
 }
 
-export function createPaste(content, expiresIn = config.defaultExpiresIn) {
-  const db = getDb()
+function isExpired(expiresAt, now = new Date()) {
+  return !!expiresAt && new Date(expiresAt + 'Z') < now
+}
+
+export async function createPaste(content, expiresIn = config.defaultExpiresIn) {
+  const sf = await getDb()
   const id = generateId()
   const contentType = detectContentType(content)
   const sizeBytes = Buffer.byteLength(content, 'utf8')
   const tokenCount = estimateTokens(content)
   const expiresAt = computeExpiresAt(expiresIn)
 
-  const stmt = db.prepare(`
-    INSERT INTO pastes (id, content, content_type, size_bytes, token_count, expires_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `)
-  stmt.run(id, content, contentType, sizeBytes, tokenCount, expiresAt)
+  await sf.create(COLLECTION, {
+    pid: id,
+    content,
+    content_type: contentType,
+    size_bytes: sizeBytes,
+    token_count: tokenCount,
+    expires_at: expiresAt,
+  })
 
   return {
     id,
@@ -44,52 +51,59 @@ export function createPaste(content, expiresIn = config.defaultExpiresIn) {
   }
 }
 
-export function getPaste(id) {
-  const db = getDb()
-  const paste = db.prepare('SELECT * FROM pastes WHERE id = ?').get(id)
+export async function getPaste(id) {
+  const sf = await getDb()
+  const rec = await sf.findOne(COLLECTION, 'pid', id)
+  if (!rec) return null
 
-  if (!paste) return null
-
-  if (paste.expires_at && new Date(paste.expires_at + 'Z') < new Date()) {
-    db.prepare('DELETE FROM pastes WHERE id = ?').run(id)
+  if (isExpired(rec.expires_at)) {
+    await sf.remove(COLLECTION, rec.id)
     return null
   }
 
-  return paste
+  // Callers expect `.id` to be the short paste id (used to build URLs / title).
+  return { ...rec, id: rec.pid }
 }
 
-export function getStats() {
-  const db = getDb()
-  const now = new Date().toISOString().replace('T', ' ').slice(0, 19)
-  const row = db.prepare(`
-    SELECT
-      COUNT(*) as total,
-      COALESCE(SUM(size_bytes), 0) as totalBytes
-    FROM pastes
-    WHERE expires_at IS NULL OR expires_at > ?
-  `).get(now)
-
+export async function getStats() {
+  const sf = await getDb()
+  const { items } = await sf.list(COLLECTION, 'limit=10000')
+  const now = new Date()
+  const active = items.filter(p => !isExpired(p.expires_at, now))
   return {
-    activePastes: row.total,
-    totalBytes: row.totalBytes
+    activePastes: active.length,
+    totalBytes: active.reduce((sum, p) => sum + (p.size_bytes || 0), 0)
   }
 }
 
-export function listRecent(limit = 20) {
-  const db = getDb()
-  const now = new Date().toISOString().replace('T', ' ').slice(0, 19)
-  return db.prepare(`
-    SELECT id, content_type, size_bytes, token_count, created_at, expires_at
-    FROM pastes
-    WHERE expires_at IS NULL OR expires_at > ?
-    ORDER BY created_at DESC
-    LIMIT ?
-  `).all(now, limit)
+export async function listRecent(limit = 20) {
+  const sf = await getDb()
+  const { items } = await sf.list(COLLECTION, 'limit=10000')
+  const now = new Date()
+  return items
+    .filter(p => !isExpired(p.expires_at, now))
+    .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
+    .slice(0, limit)
+    .map(p => ({
+      id: p.pid,
+      content_type: p.content_type,
+      size_bytes: p.size_bytes,
+      token_count: p.token_count,
+      created_at: p.created_at,
+      expires_at: p.expires_at
+    }))
 }
 
-export function cleanupExpired() {
-  const db = getDb()
-  const now = new Date().toISOString().replace('T', ' ').slice(0, 19)
-  const result = db.prepare('DELETE FROM pastes WHERE expires_at <= ?').run(now)
-  return result.changes
+export async function cleanupExpired() {
+  const sf = await getDb()
+  const { items } = await sf.list(COLLECTION, 'limit=10000')
+  const now = new Date()
+  let removed = 0
+  for (const p of items) {
+    if (isExpired(p.expires_at, now)) {
+      await sf.remove(COLLECTION, p.id)
+      removed++
+    }
+  }
+  return removed
 }
